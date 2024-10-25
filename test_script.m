@@ -26,12 +26,16 @@ load('somas.mat', 'somas')
 load('markers.mat', 'markers')
 senpai_separator(senpai_final,cIM,somas | markers);
 load('senpai_separator.mat', 'parcel_final');
+
 % visualization of a selection of close-by neurons
 sel=[73 30 43 12 13 11 16 10 8 6];
+folder_name = 'neurons_morph';
+mkdir(folder_name);
 figure;
 for ss=sel
 [p,v]=isosurface(parcel_final==ss,0.2);
 hold on;patch('Faces',p,'Vertices',v,'FaceColor',rand(1,3),'EdgeColor','none','FaceLighting','gouraud');
+senpai_skeletonize(cIM,parcel_final==ss,somas,ss,folder_name)
 end
 axis equal;box off;axis off;material dull;camlight headlight;camlight headlight;
 title('selection of close-by neurons')

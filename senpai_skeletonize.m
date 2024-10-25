@@ -1,4 +1,4 @@
-function [t,swc]=senpai_skeletonize(cIM,neuron,somas)
+function [t,swc]=senpai_skeletonize(cIM,neuron,somas,ss,folder_name)
     % senpai_skeletonize:
     %     produces a matlab tree structure and an swc-formatted matrix for
     %     the skeleton of a binary segmentation
@@ -80,8 +80,9 @@ while ~isempty(edgecycles)
     cc=1;
     edgetmp=edgecycles{cc};
     % cost function for cycle cut: width+intensity
-    intdiff=min(bwd(points(G_ac.Edges.EndNodes(:,2))),bwd(points(G_ac.Edges.EndNodes(:,1))))+min(cIM(points(G_ac.Edges.EndNodes(:,2))),cIM(points(G_ac.Edges.EndNodes(:,1))))./255;
-    [~, mididx]=min(intdiff(edgetmp));
+    intdiff = double(min(bwd(points(G_ac.Edges.EndNodes(:,2))),bwd(points(G_ac.Edges.EndNodes(:,1))))) + ...
+              double(min(cIM(points(G_ac.Edges.EndNodes(:,2))),cIM(points(G_ac.Edges.EndNodes(:,1)))))/255;
+    [~, mididx]=min(intdiff(edgetmp));    [~, mididx]=min(intdiff(edgetmp));
     G_ac=rmedge(G_ac,edgetmp(mididx));
     [~,edgecycles] = allcycles(G_ac,'MaxNumCycles',1);
 end
@@ -142,8 +143,13 @@ swc(:,6)=bwd(points);
 swc(:,7)=pred;
 
 % to produce a .swc file use:
+filename = fullfile(folder_name, sprintf('neuron_skel_%d.txt', ss));
+writematrix(swc, filename, 'Delimiter', ' ');
 
-% writematrix(swc,'neuron_skel.txt','Delimiter',' ');
-% movefile neuron_skel.txt neuron_skel.swc
+% Move and rename to .swc in the same folder
+[filepath, name, ~] = fileparts(filename);
+movefile(filename, fullfile(filepath, [name '.swc']));
+%writematrix(swc,'neuron_skel_'+ss+'.txt','Delimiter',' ');
+%movefile neuron_skel.txt 'neuron_skel'+ss+'.swc'
 
 end
