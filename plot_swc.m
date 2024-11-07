@@ -27,7 +27,13 @@ function plot_swc(swcFile)
             plot3([x(i) x(parent(i))], ...
                   [y(i) y(parent(i))], ...
                   [z(i) z(parent(i))], 'b-');
+        elseif parent(i) == -1
+            plot3([x(i)], ...
+                  [y(i)], ...
+                  [z(i)], 'r.');
         end
+        
+
     end
     axis equal;
     grid on;

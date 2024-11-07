@@ -141,6 +141,7 @@ swc(:,4)=xn;
 swc(:,5)=zn;
 swc(:,6)=bwd(points);
 swc(:,7)=pred;
+swc(swc(:,7)==-1,2)=1;
 
 % to produce a .swc file use:
 filename = fullfile(folder_name, sprintf('neuron_skel_%d.txt', ss));
