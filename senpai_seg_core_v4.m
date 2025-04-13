@@ -75,7 +75,7 @@ function senpai_seg_core_v4(path_in,im_in,varargin)
     %                                           
 
 
-    % check input arguments
+    % check input arguments 
         if nargin <1
             try
                 [im_in,path_in]=uigetfile;
@@ -441,7 +441,7 @@ function senpai_seg_core_v4(path_in,im_in,varargin)
     disp('composing segmentations...') 
     % step 1: recompose crops into single images
     senpai_KM_lv1 = zeros(Nx,Ny,Nz,'uint8');
-    cIM           = zeros(Nx,Ny,Nz,tp);
+    cIM = zeros(Nx,Ny,Nz,tp);
     
     % for multiple runs
     if length(sig_G)>1

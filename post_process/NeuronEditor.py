@@ -139,6 +139,7 @@ class NeuronEditor:
         if next_branch > len(branches_stack):
             self.branch_info = None
             self.branch_type_selected = None
+            return None
         else:
             branch = branches_stack[next_branch-1]
             point_update = self.take_branch_points(branch)
@@ -149,10 +150,19 @@ class NeuronEditor:
     def update_branch_type(self, branch_type, id_branch):
         data = self.data
         branch = self.branches_stack[id_branch-1]
-        ind_nodes = np.where(data[:,0] == branch)
+        ind_nodes = np.where(np.isin(data[:,0],branch))[0]
         data[ind_nodes,1] = branch_type
         self.data = data
         
+        return
+    
+    def save_current_morph(self):
+        file = self.swc_files[self.current_file_index]
+        file = file.rstrip("/")
+        file_name = os.path.basename(file)
+        file_name = 'new_'+file_name
+        file_path = os.path.join(os.path.dirname(file),'new_morph',file_name)
+        np.savetxt(file_path,self.data,fmt ='%d %d %1.10f %1.10f %1.10f %1.10f %d')
         return
 
     def initialize_app(self):
@@ -163,6 +173,7 @@ class NeuronEditor:
             html.H1(children=f'Visualizing morphology n. {self.n_morph}', id='title'),
             html.Div(id='Branch_output'),
             html.Div(id='Button_sel'),
+            html.Div(id='Status'),
             html.Div([
                 dcc.Graph(id='3d-plot'),
                 html.Button('Next Branch', id='next_branch-button', n_clicks=0),
@@ -180,6 +191,7 @@ class NeuronEditor:
             [Output('3d-plot', 'figure'),
              Output('Branch_output', 'children'),
              Output('Button_sel', 'children'),
+             Output('Status', 'children'),
              Output('click-store', 'data'),
              Output('title', 'children')
             ],
@@ -197,11 +209,12 @@ class NeuronEditor:
             id_branch = click_data['next_branch_click']
             id_morph = click_data['next_morph_click']
             self.fig = self.plot_morphology()
+            status = "Start processing branches"
             if button_clicked != None:
                 self.color_processed_branches()
 
             if (button_clicked != None and "reset" == ctx.triggered_id):
-                self.fig = self.reset()
+                self.fig = self.reset(click_data)
 
             # Loop through the branches and add them to the figure
 
@@ -209,26 +222,30 @@ class NeuronEditor:
                 click_data['next_branch_click'] += 1
                 id_branch = click_data['next_branch_click']
                 point_update = self.next_branch(click_data['next_branch_click'])
-
+                if point_update is None:
+                    status = "No more branches to select, please click 'NEXT FILE'"
             if "Axon" == ctx.triggered_id:
                 color = 'violet'
                 branch_type = 2
                 button_clicked.append(color)
+                self.update_branch_type(branch_type,id_branch)
 
             elif "B_Dendrite" == ctx.triggered_id:
                 color = 'yellow'
                 branch_type = 3
                 button_clicked.append(color)
+                self.update_branch_type(branch_type,id_branch)
         
             elif "A_Dendrite" == ctx.triggered_id:
                 color = 'green'
                 branch_type = 4
                 button_clicked.append(color)
+                self.update_branch_type(branch_type,id_branch)
 
             if ctx.triggered_id == (axon or b_dendrite or a_dendrite):
             # Add the branch trace to the existing figure
                 self.add_trace_branch(point_update,color)
-                self.update_type(branch_type,id_branch)
+
 
             # Update the layout
             self.fig.update_layout(scene=dict(xaxis_title='X', yaxis_title='Y', zaxis_title='Z'))
@@ -241,11 +258,18 @@ class NeuronEditor:
             if 'next-file' == ctx.triggered_id:
                 click_data['next_morph_click'] += 1
                 id_morph = click_data['next_morph_click']
-                print(id_morph)
+                if id_branch != 0:
+                    if id_branch < (len(self.branches_stack)-1):
+                        for branch in range(id_branch,len(self.branches_stack)):
+                            id_branch_points = np.where(np.isin(self.data[:,0],branch))[0]
+                            self.data[id_branch_points,1] = 0
+                    self.save_current_morph()
                 if self.next_file() == False:
                     sys.exit()
+                else:
+                    self.fig = self.reset(click_data)
 
-            return self.fig, branch_info, branch_type_selected, click_data, f'Visualizing morphology n. {self.n_morph}'
+            return self.fig, branch_info, branch_type_selected, status, click_data, f'Visualizing morphology n. {self.n_morph}'
 
         # Run the server
         if __name__ != '__main__':

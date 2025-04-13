@@ -43,5 +43,5 @@ view(60,-20)
 
 % eventually, check neurons one by one and perform manual corrections on the parcellation 
 % manual correction of the parcellation
-%load('senpai_separator.mat', 'parcel_final')
-%senpai_prune(parcel_final,10,somas | markers)
+load('senpai_separator.mat', 'parcel_final')
+senpai_prune(parcel_final,10,somas | markers)
