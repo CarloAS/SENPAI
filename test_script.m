@@ -16,26 +16,26 @@ Kopt=6;
 % cd(current_fold)
 
 % segmentation step
-senpai_seg_core_v4([current_fold filesep],'test_data.tif',[current_fold filesep 'res_test_full' filesep],0,[256 256 149],[],[],Kopt);
+senpai_seg_core_v4([current_fold filesep],'test_neuron.tif',[current_fold filesep 'res_test_full' filesep],0,[1024 1024 10],[],[],Kopt);
 load('senpai_final.mat', 'senpai_final')
 load('senpai_final.mat', 'cIM')
 cd ..
 % load inputs for the parcellation step: these include markers of somas 
 % and additional markers manually set with senpai_prune 
-load('somas.mat', 'somas')
-load('markers.mat', 'markers')
-senpai_separator(senpai_final,cIM,somas | markers);
-load('senpai_separator.mat', 'parcel_final');
+load('somas_neuron.mat', 'somas')
+%load('markers.mat', 'markers')
+%senpai_separator(senpai_final,cIM,somas);
+%load('senpai_separator.mat', 'parcel_final');
 
 % visualization of a selection of close-by neurons
-sel=[73 30 43 12 13 11 16 10 8 6];
+sel=[1];
 folder_name = 'neurons_morph';
 mkdir(folder_name);
 figure;
 for ss=sel
-[p,v]=isosurface(parcel_final==ss,0.2);
+[p,v]=isosurface(senpai_final==ss,0.2);
 hold on;patch('Faces',p,'Vertices',v,'FaceColor',rand(1,3),'EdgeColor','none','FaceLighting','gouraud');
-senpai_skeletonize(cIM,parcel_final==ss,somas,ss,folder_name)
+senpai_skeletonize(cIM,senpai_final==ss,somas,ss,folder_name)
 end
 axis equal;box off;axis off;material dull;camlight headlight;camlight headlight;
 title('selection of close-by neurons')
@@ -43,5 +43,5 @@ view(60,-20)
 
 % eventually, check neurons one by one and perform manual corrections on the parcellation 
 % manual correction of the parcellation
-load('senpai_separator.mat', 'parcel_final')
-senpai_prune(parcel_final,10,somas | markers)
+%load('senpai_separator.mat', 'parcel_final')
+%senpai_prune(parcel_final,10,somas | markers)
